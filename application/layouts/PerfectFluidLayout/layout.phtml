@@ -1,0 +1,65 @@
+<?php 
+$this->headMeta()->appendHttpEquiv('Content-Type', 'text/html;charset=utf-8');
+$this->headTitle()->setSeparator(' :: ');
+$this->headTitle('Ubraa');
+echo $this->doctype();
+?>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+	<?php echo $this->headMeta() ?>
+	<?php echo $this->headTitle() ?>
+    <?php 
+    	echo $this->headLink()
+    			  ->prependStylesheet($this->baseUrl().'/styles/PerfectFluidWidthLayout/style-ie.css', 'screen', 'lt IE 7')
+    			  ->prependStylesheet($this->baseUrl().'/styles/PerfectFluidWidthLayout/style.css');
+    			  
+    ?>
+    <?php echo $this->headStyle() ?>
+    <?php echo $this->headScript() ?>
+</head>
+
+<body>
+
+	<div id="page-wrap">
+		<div id="inside">
+			
+			<div id="header">
+				<div id="main-menu">
+				    <div style="float: left;">
+				        <a href="/">Home</a>
+				        <a href="/projects">Projects</a>
+				        <a href="/help">Help</a>
+				    </div>
+				    <div style="float: right;">
+				        <a href="/login">Login</a>
+				        <a href="/register">Register</a>
+				    </div>
+				</div>
+				<div style="clear:both;"></div>
+			</div>
+		
+			<div id="left-sidebar">
+				#left-sidebar
+			</div>
+	
+			<div id="main-content">
+				<h2><?php echo $this->escape($this->title); ?></h2>
+				<?php echo $this->layout()->content ?>
+			</div>
+			
+			<div style="clear: both;"></div>
+			
+			<div id="footer">
+				<p>Powered by <a href="http://www.phpugph.com">PHPUGPH</a> &copy; 2007-2010</p>
+			</div>
+		
+		</div>
+		
+		<div style="clear: both;"></div>
+	
+	</div>
+
+</body>
+
+</html>
