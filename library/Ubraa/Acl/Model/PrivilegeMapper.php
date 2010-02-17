@@ -24,14 +24,16 @@
  */
 
 /**
- * Data mapper for acl resources
+ * Data mapper for acl roles
  */
-class Ubraa_Acl_Model_ResourceMapper extends Ubraa_Model_MapperAbstract
+class Ubraa_Acl_Model_PrivilegeMapper extends Ubraa_Model_MapperAbstract
 {
-	protected $_tableGateway = 'Ubraa_Acl_Model_DbTable_Resource';
+	protected $_tableGateway = 'Ubraa_Acl_Model_DbTable_Privilege';
 	
 	/**
-	 * Adds a new resource
+	 * Adds a new privilege
+	 * Data must contain a role_id, resource_id and privilege name
+	 * to complete the privilege
 	 *
 	 * @param array $data
 	 * @return mixed $primaryKey
@@ -42,22 +44,27 @@ class Ubraa_Acl_Model_ResourceMapper extends Ubraa_Model_MapperAbstract
 	}
 	
 	/**
-	 * Retrieves a resource
+	 * Retrieves a privilege
 	 *
+	 * @param int $roleId
 	 * @param int $resourceId
+	 * @param string $privilegeName
+	 *
 	 * @return array|boolean false
 	 */
-	public function get($resourceId)
+	public function get($roleId, $resourceId, $privilegeName)
 	{
 		$table = $this->_getTable();
 		$select = $table->select()
-					->where('resource_id = ?', $resourceId);
+					->where('role_id = ?', $roleId)
+					->where('resource_id = ?', $resourceId)
+					->where('privilege_name = ?', $privilegeName);
 					
 		return $this->fetchRow($select);
 	}
 	
 	/**
-	 * Returns all resources
+	 * Returns all privileges
 	 *
 	 * @return array|boolean false
 	 */
@@ -69,34 +76,46 @@ class Ubraa_Acl_Model_ResourceMapper extends Ubraa_Model_MapperAbstract
 	}
 	
 	/**
-	 * Updates a resource
+	 * Updates a privilege
 	 *
+	 * @param int $roleId
 	 * @param int $resourceId
+	 * @param string $privilegeName
 	 * @param array $data
+	 *
 	 * @return int $affectedRows|boolean false
 	 */
-	public function save($resourceId, array $data)
+	public function save($roleId, $resourceId, $privilegeName, array $data)
 	{
 		$table = $this->_getTable();
-		$where = array();
+		$db = $table->getDefaultAdapter();
 		
-		$where[] = $table->getDefaultAdapter()->quoteInto('resource_id = ?', $resourceId);
+		$where = array();
+		$where[] = $db->quoteInto('role_id = ?', $roleId);
+		$where[] = $db->quoteInto('resource_id = ?', $resourceId);
+		$where[] = $db->quoteInto('privilege_name = ?', $privilegeName);
 		
 		return $this->update($data, $where);
 	}
 	
 	/**
-	 * Deletes a resource
+	 * Deletes a privilege
 	 *
+	 * @param int $roleId
 	 * @param int $resourceId
-	 * return int $affectedRows|boolean false
+	 * @param string $privilegeName
+	 *
+	 * @return int $affectedRows
 	 */
-	public function delete($resourceId)
+	public function delete($roleId, $resourceId, $privilegeName)
 	{
 		$table = $this->_getTable();
+		$db = $table->getDefaultAdapter();
 		
 		$where = array();
-		$where[] = $table->getDefaultAdapter()->quoteInto('resource_id = ?', $resourceId);
+		$where[] = $db->quoteInto('role_id = ?', $roleId);
+		$where[] = $db->quoteInto('resource_id = ?', $resourceId);
+		$where[] = $db->quoteInto('privilege_name = ?', $privilegeName);
 		
 		return $this->deleteRecord($where);
 	}

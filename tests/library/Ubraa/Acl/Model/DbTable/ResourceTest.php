@@ -26,7 +26,7 @@
 require_once 'ControllerTestCase.php';
 
 /**
- * IndexController test case.
+ * Privilege table gateway test case
  */
 class Ubraa_Acl_Model_DbTable_ResourceTest extends ControllerTestCase
 {

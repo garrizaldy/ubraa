@@ -24,14 +24,14 @@
  */
 
 /**
- * Data mapper for acl resources
+ * Data mapper for acl roles
  */
-class Ubraa_Acl_Model_ResourceMapper extends Ubraa_Model_MapperAbstract
+class Ubraa_Acl_Model_RoleMapper extends Ubraa_Model_MapperAbstract
 {
-	protected $_tableGateway = 'Ubraa_Acl_Model_DbTable_Resource';
+	protected $_tableGateway = 'Ubraa_Acl_Model_DbTable_Role';
 	
 	/**
-	 * Adds a new resource
+	 * Adds a new role
 	 *
 	 * @param array $data
 	 * @return mixed $primaryKey
@@ -42,22 +42,22 @@ class Ubraa_Acl_Model_ResourceMapper extends Ubraa_Model_MapperAbstract
 	}
 	
 	/**
-	 * Retrieves a resource
+	 * Retrieves a role
 	 *
-	 * @param int $resourceId
+	 * @param int $roleId
 	 * @return array|boolean false
 	 */
-	public function get($resourceId)
+	public function get($roleId)
 	{
 		$table = $this->_getTable();
 		$select = $table->select()
-					->where('resource_id = ?', $resourceId);
+					->where('role_id = ?', $roleId);
 					
 		return $this->fetchRow($select);
 	}
 	
 	/**
-	 * Returns all resources
+	 * Returns all roles
 	 *
 	 * @return array|boolean false
 	 */
@@ -69,34 +69,34 @@ class Ubraa_Acl_Model_ResourceMapper extends Ubraa_Model_MapperAbstract
 	}
 	
 	/**
-	 * Updates a resource
+	 * Updates a role
 	 *
-	 * @param int $resourceId
+	 * @param int $roleId
 	 * @param array $data
 	 * @return int $affectedRows|boolean false
 	 */
-	public function save($resourceId, array $data)
+	public function save($roleId, array $data)
 	{
 		$table = $this->_getTable();
 		$where = array();
 		
-		$where[] = $table->getDefaultAdapter()->quoteInto('resource_id = ?', $resourceId);
+		$where[] = $table->getDefaultAdapter()->quoteInto('role_id = ?', $roleId);
 		
 		return $this->update($data, $where);
 	}
 	
 	/**
-	 * Deletes a resource
+	 * Deletes a role
 	 *
-	 * @param int $resourceId
+	 * @param int $roleId
 	 * return int $affectedRows|boolean false
 	 */
-	public function delete($resourceId)
+	public function delete($roleId)
 	{
 		$table = $this->_getTable();
 		
 		$where = array();
-		$where[] = $table->getDefaultAdapter()->quoteInto('resource_id = ?', $resourceId);
+		$where[] = $table->getDefaultAdapter()->quoteInto('role_id = ?', $roleId);
 		
 		return $this->deleteRecord($where);
 	}

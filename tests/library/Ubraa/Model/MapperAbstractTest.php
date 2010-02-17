@@ -26,7 +26,7 @@
 require_once 'ControllerTestCase.php';
 
 /**
- * MapperAbstract test case.
+ * Data mapper abstract test case.
  */
 class Ubraa_Model_MapperAbstractTest extends ControllerTestCase
 {	
@@ -39,7 +39,7 @@ class Ubraa_Model_MapperAbstractTest extends ControllerTestCase
 						'fetchRow',
 						'fetchAll',
 						'update',
-						'deleteRerocd'
+						'deleteRecord'
 						)
 					);
 		$this->assertType('Ubraa_Model_MapperAbstract', $mapper);

@@ -180,6 +180,7 @@ abstract class Ubraa_Model_MapperAbstract
 	{
 		$this->clearMessages();
 		$this->clearExceptions();
+		return $this;
 	}
 	
 	/**
@@ -321,5 +322,6 @@ abstract class Ubraa_Model_MapperAbstract
 	public function setTable(Zend_Db_Table_Abstract $table)
 	{
 		$this->_table = $table;
+		return $this;
 	}
 }
