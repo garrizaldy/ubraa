@@ -115,11 +115,23 @@ class Ubraa_Acl_Model_ResourceMapperTest extends ControllerTestCase
 	 * @depends testAdd
 	 * @param array $params
 	 */
+	public function testGetByName(array $params)
+	{
+		$resourceName = $params['data']['resource_name'];
+		
+		$fromDb = $params['mapper']->getByName($resourceName);
+		$this->assertType('array', $fromDb);
+		$this->assertEquals($resourceName, $fromDb['resource_name']);
+	}
+	
+	/**
+	 * @depends testAdd
+	 * @param array $params
+	 */
 	public function testGetAll(array $params)
 	{
 		$result = $params['mapper']->getAll();
 		$this->assertType('array', $result);
-		$this->assertEquals(1, count($result));
 		
 		$this->assertFalse($params['mapper']->hasExceptions());
 		$this->assertFalse($params['mapper']->hasMessages());

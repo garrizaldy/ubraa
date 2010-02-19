@@ -57,6 +57,21 @@ class Ubraa_Acl_Model_ResourceMapper extends Ubraa_Model_MapperAbstract
 	}
 	
 	/**
+	 * Retrieves a resource by its name
+	 *
+	 * @param string $name
+	 * @return array|boolean false
+	 */
+	public function getByName($resourceName)
+	{
+		$table = $this->_getTable();
+		$select = $table->select()
+					->where('resource_name = ?', $resourceName);
+					
+		return $this->fetchRow($select);
+	}
+	
+	/**
 	 * Returns all resources
 	 *
 	 * @return array|boolean false

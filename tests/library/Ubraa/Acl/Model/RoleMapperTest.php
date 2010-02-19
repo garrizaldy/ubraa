@@ -119,7 +119,6 @@ class Ubraa_Acl_Model_RoleMapperTest extends ControllerTestCase
 	{
 		$result = $params['mapper']->getAll();
 		$this->assertType('array', $result);
-		$this->assertEquals(1, count($result));
 		
 		$this->assertFalse($params['mapper']->hasExceptions());
 		$this->assertFalse($params['mapper']->hasMessages());
