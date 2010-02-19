@@ -137,7 +137,7 @@ class Ubraa_Acl extends Zend_Acl
 		{
 			foreach ($resources as $resource)
 			{
-				$this->addResource(new Ubraa_Acl_Resource($resource['resource_name']));
+				$this->addResource(new Zend_Acl_Resource($resource['resource_name']));
 				// cache it
 				$this->_temp['resources'][$resource['resource_id']] = $resource['resource_name'];
 			}
@@ -158,7 +158,7 @@ class Ubraa_Acl extends Zend_Acl
 		{
 			foreach ($roles as $role)
 			{
-				$this->addRole(new Ubraa_Acl_Role($role['role_name']));
+				$this->addRole(new Zend_Acl_Role($role['role_name']));
 				// cache it
 				$this->_temp['roles'][$role['role_id']] = $role['role_name'];
 			}
