@@ -66,6 +66,11 @@ class Ubraa_Acl extends Zend_Acl
 		{
 			self::$_resourceDataSource = new Ubraa_Acl_Model_ResourceMapper;
 		}
+		
+		if (self::$_privilegeDataSource === null)
+		{
+			self::$_privilegeDataSource = new Ubraa_Acl_Model_PrivilegeMapper;
+		}
 	}
 	
 	/**
@@ -188,5 +193,22 @@ class Ubraa_Acl extends Zend_Acl
 			}
 		}
 		return $this;
+	}
+	
+	public function isAllowed($role = null, $resource = null, $privilege= null)
+	{
+		// check first if role exists
+		if (!$this->hasRole($role))
+		{
+			return false;
+		}
+		
+		// check first if resource exists
+		if (!$this->has($resource))
+		{
+			return false;
+		}
+		
+		return parent::isAllowed($role, $resource, $privilege);
 	}
 }
