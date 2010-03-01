@@ -218,7 +218,7 @@ abstract class Ubraa_Model_MapperAbstract
 			$result = $table->fetchRow($select);
 			if ($result)
 			{
-				return $result->toArray();			
+				return $result->toArray();
 			}
 			$this->addMessage($this->_messageTemplates[self::NO_RECORD_FOUND]);
 		}
@@ -243,7 +243,11 @@ abstract class Ubraa_Model_MapperAbstract
 			$result = $table->fetchAll($select);
 			if ($result)
 			{
-				return $result->toArray();
+				$result = $result->toArray();
+				if (!empty($result))
+				{
+					return $result;
+				}
 			}
 			$this->addMessage($this->_messageTemplates[self::NO_RECORD_FOUND]);
 		}
