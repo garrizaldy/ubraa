@@ -17,13 +17,13 @@
  * limitations under the License.
  * 
  * @category    Ubraa
- * @package     Ubraa_Model
+ * @package     Application_Model
  * @copyright   Copyright (c) 2007-2010 PHP User Group Philippines Inc. (http://www.phpugph.com)
  * @license     http://www.apache.org/licenses/LICENSE-2.0  Apache Software License 2.0
  * @version     $Id:$
  */
 
-abstract class Ubraa_Model_MapperAbstract
+abstract class Application_Model_MapperAbstract
 {
 	const NO_RECORD_FOUND 	= 'noRecordFound';
 	const NO_RECORD_ADDED 	= 'noRecordAdded';

@@ -17,29 +17,29 @@
  * limitations under the License.
  * 
  * @category    Ubraa
- * @package     Ubraa_Acl
+ * @package     Application_Model_Acl
  * @copyright   Copyright (c) 2007-2010 PHP User Group Philippines Inc. (http://www.phpugph.com)
  * @license     http://www.apache.org/licenses/LICENSE-2.0  Apache Software License 2.0
  * @version     $Id:$
  */
 
-class Ubraa_Acl extends Zend_Acl
+class Application_Model_Acl extends Zend_Acl
 {
 	/**
 	 * Role data source
-	 * Usually a Ubraa_Acl_Model_RoleMapper
+	 * Usually a Application_Model_RoleMapper
 	 */
 	protected static $_roleDataSource = null;
 	
 	/**
 	 * Resource data source
-	 * Usually a Ubraa_Acl_Model_ResourceMapper
+	 * Usually a Application_Model_ResourceMapper
 	 */
 	protected static $_resourceDataSource = null;
 	
 	/**
 	 * Privilege data source
-	 * Usually a Ubraa_Acl_Model_PrivilegeMapper
+	 * Usually a Application_Model_PrivilegeMapper
 	 */
 	protected static $_privilegeDataSource = null;
 	
@@ -59,17 +59,17 @@ class Ubraa_Acl extends Zend_Acl
 	{
 		if (self::$_roleDataSource === null)
 		{
-			self::$_roleDataSource = new Ubraa_Acl_Model_RoleMapper;
+			self::$_roleDataSource = new Application_Model_RoleMapper;
 		}
 		
 		if (self::$_resourceDataSource === null)
 		{
-			self::$_resourceDataSource = new Ubraa_Acl_Model_ResourceMapper;
+			self::$_resourceDataSource = new Application_Model_ResourceMapper;
 		}
 		
 		if (self::$_privilegeDataSource === null)
 		{
-			self::$_privilegeDataSource = new Ubraa_Acl_Model_PrivilegeMapper;
+			self::$_privilegeDataSource = new Application_Model_PrivilegeMapper;
 		}
 	}
 	
@@ -181,13 +181,19 @@ class Ubraa_Acl extends Zend_Acl
 			{
 				$action = ($priv['allow']) ? 'allow' : 'deny';
 				
+				$resourceId = null;
+				if (isset($this->_temp['resources'][$priv['resource_id']]) && $this->_temp['resources'][$priv['resource_id']])
+				{
+					$resourceId = $this->_temp['resources'][$priv['resource_id']];
+				}
+				$privName = (!empty($priv['privilege_name'])) ? $priv['privilege_name'] : null;
 				// get the name from cache based on ids
-				if (isset($this->_temp['roles'][$priv['role_id']]) && isset($this->_temp['resources'][$priv['resource_id']]))
+				if (isset($this->_temp['roles'][$priv['role_id']]))
 				{
 					$this->$action(
 						$this->_temp['roles'][$priv['role_id']],
-						$this->_temp['resources'][$priv['resource_id']],
-						$priv['privilege_name']
+						$resourceId,
+						$privName
 					);
 				}
 			}

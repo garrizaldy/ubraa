@@ -23,7 +23,7 @@
  * @version     $Id:$
  */
 
-class Application_Model_UserRoleMapper extends Ubraa_Model_MapperAbstract
+class Application_Model_UserRoleMapper extends Application_Model_MapperAbstract
 {
 	protected $_tableGateway = 'Application_Model_DbTable_UserRole';
 	

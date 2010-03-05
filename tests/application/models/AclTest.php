@@ -17,7 +17,7 @@
  * limitations under the License.
  * 
  * @category    Ubraa
- * @package     Ubraa_AclTest
+ * @package     Application_Model_AclTest
  * @copyright   Copyright (c) 2007-2010 PHP User Group Philippines Inc. (http://www.phpugph.com)
  * @license     http://www.apache.org/licenses/LICENSE-2.0  Apache Software License 2.0
  * @version     $Id:$
@@ -25,7 +25,7 @@
 
 require_once 'ControllerTestCase.php';
 
-class Ubraa_Acl_Test extends ControllerTestCase
+class Application_Model_AclTest extends ControllerTestCase
 {
 	/**
 	 * Test data
@@ -107,11 +107,11 @@ class Ubraa_Acl_Test extends ControllerTestCase
 			'allow'				=> self::ALLOW,
 			'privilege_description' => 'allow member to view article'
 		),
-		// allow all privileges to admin for articles
+		// allow all privileges to admin for all resources
 		array(
 			'role_id'			=> self::ADMIN,
-			'resource_id'		=> self::ARTICLE,
-			'privilege_name'	=> null,
+			'resource_id'		=> 0,
+			'privilege_name'	=> '',
 			'allow'				=> self::ALLOW,
 			'privilege_description' => 'allow all privileges to admin for article'
 		),
@@ -143,30 +143,13 @@ class Ubraa_Acl_Test extends ControllerTestCase
 			'allow'				=> self::ALLOW,
 			'privilege_description' => 'allow member to add comment'
 		),
-		// admin has all privilege for comment
-		array(
-			'role_id'			=> self::ADMIN,
-			'resource_id'		=> self::COMMENT,
-			'privilege_name'	=> null,
-			'allow'				=> self::ALLOW,
-			'privilege_description' => 'allow all privileges for comment'
-		),
 		// viewing gallery privileges
-		// guest is off limit from gallery
 		array(
 			'role_id'			=> self::MEMBER,
 			'resource_id'		=> self::GALLERY,
 			'privilege_name'	=> self::GALLERY_VIEW,
 			'allow'				=> self::ALLOW,
 			'privilege_description' => 'allow member to view gallery'
-		),
-		// allow all privileges to admin for gallery
-		array(
-			'role_id'			=> self::ADMIN,
-			'resource_id'		=> self::GALLERY,
-			'privilege_name'	=> null,
-			'allow'				=> self::ALLOW,
-			'privilege_description' => 'allow all privileges to admin for gallery'
 		),
 		// adding gallery privileges
 		array(
@@ -188,27 +171,27 @@ class Ubraa_Acl_Test extends ControllerTestCase
 	
 	public function testObject()
 	{
-		$acl = new Ubraa_Acl;
-		$this->assertType('Ubraa_Acl', $acl);
+		$acl = new Application_Model_Acl;
+		$this->assertType('Application_Model_Acl', $acl);
 		
 		return $acl;
 	}
 	
 	/**
 	 * @depends testObject
-	 * @param Ubraa_Acl $acl
+	 * @param Application_Model_Acl $acl
 	 */
-	public function testInit(Ubraa_Acl $acl)
+	public function testInit(Application_Model_Acl $acl)
 	{
 		$roleDataSource = $this->getMock(
-			'Ubraa_Acl_Model_RoleMapper', array('getAll')
+			'Application_Model_RoleMapper', array('getAll')
 		);
 		$roleDataSource->expects($this->any())
 			->method('getAll')
 			->will($this->returnValue($this->_testRoleData));
 				   
 		$resourceDataSource = $this->getMock(
-			'Ubraa_Acl_Model_ResourceMapper', array('getAll')
+			'Application_Model_ResourceMapper', array('getAll')
 		);
 		$resourceDataSource->expects($this->any())
 			->method('getAll')
@@ -216,27 +199,27 @@ class Ubraa_Acl_Test extends ControllerTestCase
 		);
 			
 		$privilegeDataSource = $this->getMock(
-			'Ubraa_Acl_Model_PrivilegeMapper', array('getAll')
+			'Application_Model_PrivilegeMapper', array('getAll')
 		);
 		$privilegeDataSource->expects($this->any())
 			->method('getAll')
 			->will($this->returnValue($this->_testPrivilegeData)
 		);
 			
-		Ubraa_Acl::setRoleDataSource($roleDataSource);
-		Ubraa_Acl::setResourceDataSource($resourceDataSource);
-		Ubraa_Acl::setPrivilegeDataSource($privilegeDataSource);
+		Application_Model_Acl::setRoleDataSource($roleDataSource);
+		Application_Model_Acl::setResourceDataSource($resourceDataSource);
+		Application_Model_Acl::setPrivilegeDataSource($privilegeDataSource);
 		
-		$this->assertType('Ubraa_Acl', $acl->init());
+		$this->assertType('Application_Model_Acl', $acl->init());
 		
 		return $acl;
 	}
 	
 	/**
 	 * @depends testInit
-	 * @param Ubraa_Acl $acl
+	 * @param Application_Model_Acl $acl
 	 */
-	public function testRulesArticles(Ubraa_Acl $acl)
+	public function testRulesArticles(Application_Model_Acl $acl)
 	{
 		// test guest for viewing atricles
 		// guest can only view articles
@@ -271,9 +254,9 @@ class Ubraa_Acl_Test extends ControllerTestCase
 	
 	/**
 	 * @depends testInit
-	 * @param Ubraa_Acl
+	 * @param Application_Model_Acl
 	 */
-	public function testRulesComment(Ubraa_Acl $acl)
+	public function testRulesComment(Application_Model_Acl $acl)
 	{
 		// test guest for comment privileges
 		// has no privilege for add, edit and delete
@@ -303,9 +286,9 @@ class Ubraa_Acl_Test extends ControllerTestCase
 	
 	/**
 	 * @depends testInit
-	 * @param Ubraa_Acl $acl
+	 * @param Application_Model_Acl $acl
 	 */
-	public function testRulesGallery(Ubraa_Acl $acl)
+	public function testRulesGallery(Application_Model_Acl $acl)
 	{
 		// test guest privileges for gallery
 		// guest can't view gallery
@@ -340,9 +323,9 @@ class Ubraa_Acl_Test extends ControllerTestCase
 	
 	/**
 	 * @depends testInit
-	 * @param Ubraa_Acl $acl
+	 * @param Application_Model_Acl $acl
 	 */
-	public function testNonExisting(Ubraa_Acl $acl)
+	public function testNonExisting(Application_Model_Acl $acl)
 	{
 		$this->assertFalse($acl->isAllowed('unknown_user'));
 		

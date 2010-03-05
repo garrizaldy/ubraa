@@ -17,7 +17,7 @@
  * limitations under the License.
  * 
  * @category    Ubraa
- * @package     Ubraa_Acl_MapperTest
+ * @package     Application_MapperTest
  * @copyright   Copyright (c) 2007-2010 PHP User Group Philippines Inc. (http://www.phpugph.com)
  * @license     http://www.apache.org/licenses/LICENSE-2.0  Apache Software License 2.0
  * @version     $Id:$
@@ -26,75 +26,75 @@
 require_once 'ControllerTestCase.php';
 
 /**
- * Role data mapper test case
+ * Resource data mapper test case
  */
-class Ubraa_Acl_Model_RoleMapperTest extends ControllerTestCase
+class Application_Model_ResourceMapperTest extends ControllerTestCase
 {	
 	public function testObject()
 	{
-		$roleMapper = new Ubraa_Acl_Model_RoleMapper;
-		$this->assertType('Ubraa_Acl_Model_RoleMapper', $roleMapper);
+		$resourceMapper = new Application_Model_ResourceMapper;
+		$this->assertType('Application_Model_ResourceMapper', $resourceMapper);
 		
-		return $roleMapper;
+		return $resourceMapper;
 	}
 	
 	/**
 	 * @depends testObject
-	 * @param $roleMapper
+	 * @param $resourceMapper
 	 */
-	public function testAdd($roleMapper)
+	public function testAdd($resourceMapper)
 	{
 		$data = array(
-			'role_id' => 120,
-			'role_name' => 'testAddRole',
-			'role_description' => 'added by unit testing'
+			'resource_id' => 120,
+			'resource_name' => 'testAddResource',
+			'resource_description' => 'added by unit testing'
 		);
-		$result = $roleMapper->add($data);
+		$result = $resourceMapper->add($data);
 		$this->assertTrue((boolean)$result);
 		
 		return array(
-			'mapper' => $roleMapper,
+			'mapper' => $resourceMapper,
 			'data' => $data
 		);
 	}
 	
 	/**
 	 * @depends testObject
-	 * @param $roleMapper
+	 * @param $resourceMapper
 	 */
-	public function testAddDuplicate($roleMapper)
+	public function testAddDuplicate($resourceMapper)
 	{
 		$data = array(
-			'role_id' => 120,
-			'role_name' => 'testAddRole',
-			'role_description' => 'added by unit testing'
+			'resource_id' => 120,
+			'resource_name' => 'testAddResource',
+			'resource_description' => 'added by unit testing'
 		);
-		$result = $roleMapper->add($data);
+		$result = $resourceMapper->add($data);
 		$this->assertFalse((boolean)$result);
-		$this->assertTrue($roleMapper->hasExceptions());
-		$this->assertTrue($roleMapper->hasMessages());
+		$this->assertTrue($resourceMapper->hasExceptions());
+		$this->assertTrue($resourceMapper->hasMessages());
 		
-		$roleMapper->reset();
+		$resourceMapper->reset();
 	}
 	
 	/**
 	 * @depends testObject
-	 * @param $roleMapper
+	 * @param $resourceMapper
 	 */
-	public function testAddInvalid($roleMapper)
+	public function testAddInvalid($resourceMapper)
 	{
-		// should fail because role_id is numeric
+		// should fail because resource_id is numeric
 		$data = array(
-			'role_id' => 'abcdefg',
-			'role_name' => 'testAddRole',
-			'role_description' => 'added by unit testing'
+			'resource_id' => 'abcdefg',
+			'resource_name' => 'testAddResource',
+			'resource_description' => 'added by unit testing'
 		);
-		$result = $roleMapper->add($data);
+		$result = $resourceMapper->add($data);
 		$this->assertFalse((boolean)$result);
-		$this->assertTrue($roleMapper->hasExceptions());
-		$this->assertTrue($roleMapper->hasMessages());
+		$this->assertTrue($resourceMapper->hasExceptions());
+		$this->assertTrue($resourceMapper->hasMessages());
 		
-		$roleMapper->reset();
+		$resourceMapper->reset();
 	}
 	
 	/**
@@ -103,12 +103,25 @@ class Ubraa_Acl_Model_RoleMapperTest extends ControllerTestCase
 	 */
 	public function testGet(array $params)
 	{
-		$roleId = $params['data']['role_id'];
-		$fromDb = $params['mapper']->get($roleId);
+		$resourceId = $params['data']['resource_id'];
+		$fromDb = $params['mapper']->get($resourceId);
 		$this->assertType('array', $fromDb);
-		$this->assertEquals($fromDb['role_name'], $params['data']['role_name']);
+		$this->assertEquals($fromDb['resource_name'], $params['data']['resource_name']);
 		
 		return $params;
+	}
+	
+	/**
+	 * @depends testAdd
+	 * @param array $params
+	 */
+	public function testGetByName(array $params)
+	{
+		$resourceName = $params['data']['resource_name'];
+		
+		$fromDb = $params['mapper']->getByName($resourceName);
+		$this->assertType('array', $fromDb);
+		$this->assertEquals($resourceName, $fromDb['resource_name']);
 	}
 	
 	/**
@@ -130,8 +143,8 @@ class Ubraa_Acl_Model_RoleMapperTest extends ControllerTestCase
 	 */
 	public function testGetNotExisting(array $params)
 	{
-		$roleId = 0;
-		$fromDb = $params['mapper']->get($roleId);
+		$resourceId = 0;
+		$fromDb = $params['mapper']->get($resourceId);
 		$this->assertFalse($fromDb);
 		$this->assertTrue($params['mapper']->hasMessages());
 		
@@ -144,18 +157,18 @@ class Ubraa_Acl_Model_RoleMapperTest extends ControllerTestCase
 	 */
 	public function testSave(array $params)
 	{
-		$roleId = $params['data']['role_id'];
+		$resourceId = $params['data']['resource_id'];
 		$updatedData = $params['data'];
-		$updatedData['role_name'] = 'testAddRoleUp';
+		$updatedData['resource_name'] = 'testAddResourceUp';
 		
-		$result = $params['mapper']->save($roleId, $updatedData);
+		$result = $params['mapper']->save($resourceId, $updatedData);
 		$this->assertTrue((boolean)$result);
 		
 		// test updated name
-		$getData = $params['mapper']->get($roleId);
+		$getData = $params['mapper']->get($resourceId);
 		$this->assertType('array', $getData);
 		
-		$this->assertEquals($updatedData['role_name'], $getData['role_name']);
+		$this->assertEquals($updatedData['resource_name'], $getData['resource_name']);
 	}
 	
 	/**
@@ -164,10 +177,10 @@ class Ubraa_Acl_Model_RoleMapperTest extends ControllerTestCase
 	 */
 	public function testSaveNonExisting(array $params)
 	{
-		$roleId = 0;
-		$updatedData = array('role_name' => 'NewName');
+		$resourceId = 0;
+		$updatedData = array('resource_name' => 'NewName');
 		
-		$result = $params['mapper']->save($roleId, $updatedData);
+		$result = $params['mapper']->save($resourceId, $updatedData);
 		
 		// affected rows must be 0 with no failure messages
 		
@@ -182,12 +195,12 @@ class Ubraa_Acl_Model_RoleMapperTest extends ControllerTestCase
 	 */
 	public function testDelete(array $params)
 	{
-		$roleId = $params['data']['role_id'];
-		$result = $params['mapper']->delete($roleId);
+		$resourceId = $params['data']['resource_id'];
+		$result = $params['mapper']->delete($resourceId);
 		$this->assertTrue((boolean)$result);
 		
 		// get it
-		$fromDb = $params['mapper']->get($roleId);
+		$fromDb = $params['mapper']->get($resourceId);
 		$this->assertFalse($fromDb);
 		$this->assertTrue($params['mapper']->hasMessages());
 		$params['mapper']->reset();
@@ -199,8 +212,8 @@ class Ubraa_Acl_Model_RoleMapperTest extends ControllerTestCase
 	 */
 	public function testDeleteNonExisting(array $params)
 	{
-		$roleId = $params['data']['role_id'];
-		$result = $params['mapper']->delete($roleId);
+		$resourceId = $params['data']['resource_id'];
+		$result = $params['mapper']->delete($resourceId);
 		
 		$this->assertEquals(0, $result);
 		$this->assertFalse($params['mapper']->hasMessages());

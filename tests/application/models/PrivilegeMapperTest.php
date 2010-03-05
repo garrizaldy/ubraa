@@ -17,7 +17,7 @@
  * limitations under the License.
  * 
  * @category    Ubraa
- * @package     Ubraa_Acl_MapperTest
+ * @package     Application_MapperTest
  * @copyright   Copyright (c) 2007-2010 PHP User Group Philippines Inc. (http://www.phpugph.com)
  * @license     http://www.apache.org/licenses/LICENSE-2.0  Apache Software License 2.0
  * @version     $Id:$
@@ -28,21 +28,21 @@ require_once 'ControllerTestCase.php';
 /**
  * Privilege data mapper test case
  */
-class Ubraa_Acl_Model_PrivilegeMapperTest extends ControllerTestCase
+class Application_Model_PrivilegeMapperTest extends ControllerTestCase
 {	
 	public function testObject()
 	{
-		$privMapper = new Ubraa_Acl_Model_PrivilegeMapper;
-		$this->assertType('Ubraa_Acl_Model_PrivilegeMapper', $privMapper);
+		$privMapper = new Application_Model_PrivilegeMapper;
+		$this->assertType('Application_Model_PrivilegeMapper', $privMapper);
 		
 		return $privMapper;
 	}
 	
 	/**
 	 * @depends testObject
-	 * @param Ubraa_Acl_Model_PrivilegeMapper $privMapper
+	 * @param Application_Model_PrivilegeMapper $privMapper
 	 */
-	public function testAdd(Ubraa_Acl_Model_PrivilegeMapper $privMapper)
+	public function testAdd(Application_Model_PrivilegeMapper $privMapper)
 	{
 		$data = array(
 			'role_id' => 120,

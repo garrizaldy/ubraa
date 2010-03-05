@@ -17,19 +17,23 @@
  * limitations under the License.
  * 
  * @category    Ubraa
- * @package     Ubraa_Acl_Model
+ * @package     Application_ModelTest
  * @copyright   Copyright (c) 2007-2010 PHP User Group Philippines Inc. (http://www.phpugph.com)
  * @license     http://www.apache.org/licenses/LICENSE-2.0  Apache Software License 2.0
  * @version     $Id:$
  */
 
+require_once 'ControllerTestCase.php';
+
 /**
- * Table gateway for managing acl resources
+ * Privilege table gateway test case
  */
-class Ubraa_Acl_Model_DbTable_Privilege extends Zend_Db_Table_Abstract
+class Application_Model_DbTable_RoleTest extends ControllerTestCase
 {
-	/**
-	 * @var string
-	 */
-	protected $_name = 'ubraa_acl_privilege';
+	public function testObject()
+	{
+		$dbTable = new Application_Model_DbTable_Role;
+		$this->assertType('Application_Model_DbTable_Role', $dbTable);
+	}
 }
+

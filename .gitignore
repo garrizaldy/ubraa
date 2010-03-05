@@ -1,3 +1,7 @@
 # Ignore Komodo Project file
 Ubraa.kpf
 
+# Ignore Eclipse Settings
+.buildpath
+.project
+.settings

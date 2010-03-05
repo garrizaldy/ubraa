@@ -33,7 +33,7 @@ class Application_Model_User
 	 * @param mixed $mapper
 	 * @return $this Provides fluent interface
 	 */
-	public function setMapper(Ubraa_Model_MapperAbstract $mapper)
+	public function setMapper(Application_Model_MapperAbstract $mapper)
 	{
 		$this->_mapper = $mapper;
 		

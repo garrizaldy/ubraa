@@ -17,7 +17,7 @@
  * limitations under the License.
  * 
  * @category    Ubraa
- * @package     Ubraa_Model
+ * @package     Application_Model
  * @copyright   Copyright (c) 2007-2010 PHP User Group Philippines Inc. (http://www.phpugph.com)
  * @license     http://www.apache.org/licenses/LICENSE-2.0  Apache Software License 2.0
  * @version     $Id:$
@@ -28,12 +28,12 @@ require_once 'ControllerTestCase.php';
 /**
  * Data mapper abstract test case.
  */
-class Ubraa_Model_MapperAbstractTest extends ControllerTestCase
+class Application_Model_MapperAbstractTest extends ControllerTestCase
 {	
 	public function testObject()
 	{
 		$mapper = $this->getMock(
-					'Ubraa_Model_MapperAbstract',
+					'Application_Model_MapperAbstract',
 					array(
 						'insert',
 						'fetchRow',
@@ -42,7 +42,7 @@ class Ubraa_Model_MapperAbstractTest extends ControllerTestCase
 						'deleteRecord'
 						)
 					);
-		$this->assertType('Ubraa_Model_MapperAbstract', $mapper);
+		$this->assertType('Application_Model_MapperAbstract', $mapper);
 		
 		$this->assertFalse($mapper->hasMessages());
 		$this->assertFalse($mapper->hasExceptions());
