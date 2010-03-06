@@ -206,4 +206,88 @@ class Application_Model_RoleMapperTest extends ControllerTestCase
 		$this->assertFalse($params['mapper']->hasMessages());
 		$this->assertFalse($params['mapper']->hasExceptions());
 	}
+	
+	/**
+	 * Add two roles, the second will inherit from the first
+	 * 
+	 * @depends testObject
+	 */
+	public function testInheritanceLevel()
+	{
+		$mapper = new Application_Model_RoleMapper;
+		$testUser = 120;
+		
+		// the root of all generic users
+		$data = array(
+			'role_id' 	=> $testUser,
+			'role_name' => 'testGenericUser',
+			'role_description' => 'General type user, has limited access'
+		);
+		
+		$result = $mapper->add($data);
+		$this->assertTrue((boolean)$result);
+		$this->assertFalse($mapper->hasMessages());
+		$this->assertFalse($mapper->hasExceptions());
+		
+		// get is and test
+		$fromDb = $mapper->get($testUser);
+		$this->assertType('array', $fromDb);
+		$this->assertEquals($testUser, $fromDb['role_id']);
+		
+		// must have no parent
+		$this->assertEquals(null, $fromDb['parent_role']);
+		// must be root
+		$this->assertEquals(0, $fromDb['inheritance_level']);
+		
+		return array(
+			'mapper' => $mapper,
+			'data' => $data
+		);
+	}
+	
+	/**
+	 * @depends testInheritanceLevel
+	 */
+	public function testAddChild(array $params)
+	{
+		$childId = 121;
+		$child = array(
+			'role_id' => $childId,
+			'role_name' => 'testUserGuest',
+			'role_description' => 'User with many restrictions',
+			'parent_role' => $params['data']['role_id'],
+			'inheritance_level' => (int)$params['data']['role_id'] + 1
+		);
+		
+		$result = $params['mapper']->add($child);
+		$this->assertTrue((boolean)$result);
+		$this->assertFalse($params['mapper']->hasMessages());
+		$this->assertFalse($params['mapper']->hasExceptions());
+		
+		// get it again
+		$fromDb = $params['mapper']->get($childId);
+		$this->assertType('array', $fromDb);
+		$this->assertEquals($childId, $fromDb['role_id']);
+		
+		// must have parent
+		$this->assertEquals($params['data']['role_id'], $fromDb['parent_role']);
+		// must be child
+		$this->assertEquals($child['inheritance_level'], $fromDb['inheritance_level']);
+		
+		// delete
+		$this->assertEquals(1, $params['mapper']->delete($childId));
+		$this->assertFalse($params['mapper']->hasMessages());
+		$this->assertFalse($params['mapper']->hasExceptions());
+	}
+	
+	/**
+	 * @depends testInheritanceLevel
+	 */
+	public function testDeleteParent(array $params)
+	{
+		$result = $params['mapper']->delete($params['data']['role_id']);
+		$this->assertEquals(1, $result);
+		$this->assertFalse($params['mapper']->hasMessages());
+		$this->assertFalse($params['mapper']->hasExceptions());
+	}
 }

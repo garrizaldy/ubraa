@@ -219,4 +219,88 @@ class Application_Model_ResourceMapperTest extends ControllerTestCase
 		$this->assertFalse($params['mapper']->hasMessages());
 		$this->assertFalse($params['mapper']->hasExceptions());
 	}
+	
+	/**
+	 * Add two resources, the second will inherit from the first
+	 * 
+	 * @depends testObject
+	 */
+	public function testInheritanceLevel()
+	{
+		$mapper = new Application_Model_ResourceMapper;
+		$testUser = 120;
+		
+		// the root of all generic users
+		$data = array(
+			'resource_id' 	=> $testUser,
+			'resource_name' => 'testGenericUser',
+			'resource_description' => 'General type user, has limited access'
+		);
+		
+		$result = $mapper->add($data);
+		$this->assertTrue((boolean)$result);
+		$this->assertFalse($mapper->hasMessages());
+		$this->assertFalse($mapper->hasExceptions());
+		
+		// get is and test
+		$fromDb = $mapper->get($testUser);
+		$this->assertType('array', $fromDb);
+		$this->assertEquals($testUser, $fromDb['resource_id']);
+		
+		// must have no parent
+		$this->assertEquals(null, $fromDb['parent_resource']);
+		// must be root
+		$this->assertEquals(0, $fromDb['inheritance_level']);
+		
+		return array(
+			'mapper' => $mapper,
+			'data' => $data
+		);
+	}
+	
+	/**
+	 * @depends testInheritanceLevel
+	 */
+	public function testAddChild(array $params)
+	{
+		$childId = 121;
+		$child = array(
+			'resource_id' => $childId,
+			'resource_name' => 'testUserGuest',
+			'resource_description' => 'User with many restrictions',
+			'parent_resource' => $params['data']['resource_id'],
+			'inheritance_level' => (int)$params['data']['resource_id'] + 1
+		);
+		
+		$result = $params['mapper']->add($child);
+		$this->assertTrue((boolean)$result);
+		$this->assertFalse($params['mapper']->hasMessages());
+		$this->assertFalse($params['mapper']->hasExceptions());
+		
+		// get it again
+		$fromDb = $params['mapper']->get($childId);
+		$this->assertType('array', $fromDb);
+		$this->assertEquals($childId, $fromDb['resource_id']);
+		
+		// must have parent
+		$this->assertEquals($params['data']['resource_id'], $fromDb['parent_resource']);
+		// must be child
+		$this->assertEquals($child['inheritance_level'], $fromDb['inheritance_level']);
+		
+		// delete
+		$this->assertEquals(1, $params['mapper']->delete($childId));
+		$this->assertFalse($params['mapper']->hasMessages());
+		$this->assertFalse($params['mapper']->hasExceptions());
+	}
+	
+	/**
+	 * @depends testInheritanceLevel
+	 */
+	public function testDeleteParent(array $params)
+	{
+		$result = $params['mapper']->delete($params['data']['resource_id']);
+		$this->assertEquals(1, $result);
+		$this->assertFalse($params['mapper']->hasMessages());
+		$this->assertFalse($params['mapper']->hasExceptions());
+	}
 }

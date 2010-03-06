@@ -25,23 +25,33 @@
 
 class Application_Model_Acl extends Zend_Acl
 {
+    /**
+     * Singleton instance
+     *
+     * @var Application_Model_Acl
+     */
+    protected static $_instance = null;
+	
 	/**
 	 * Role data source
-	 * Usually a Application_Model_RoleMapper
+	 *
+	 * @var Application_Model_RoleMapper
 	 */
-	protected static $_roleDataSource = null;
+	protected $_roleDataSource = null;
 	
 	/**
 	 * Resource data source
-	 * Usually a Application_Model_ResourceMapper
+	 * 
+	 * @var Application_Model_ResourceMapper
 	 */
-	protected static $_resourceDataSource = null;
+	protected $_resourceDataSource = null;
 	
 	/**
 	 * Privilege data source
-	 * Usually a Application_Model_PrivilegeMapper
+	 * 
+	 * @var Application_Model_PrivilegeMapper
 	 */
-	protected static $_privilegeDataSource = null;
+	protected $_privilegeDataSource = null;
 	
 	/**
 	 * Temporary placeholder for roles
@@ -52,58 +62,121 @@ class Application_Model_Acl extends Zend_Acl
 		'resources' => array()
 	);
 	
-	/**
-	 * Initializes data source
-	 */
-	public function __construct()
-	{
-		if (self::$_roleDataSource === null)
+    /**
+     * Singleton pattern implementation makes "new" unavailable
+     *
+     * @return void
+     */
+    protected function __construct()
+    {}
+
+    /**
+     * Singleton pattern implementation makes "clone" unavailable
+     *
+     * @return void
+     */
+    protected function __clone()
+    {}
+
+    /**
+     * Returns an instance of Application_Model_Acl
+     *
+     * Singleton pattern implementation
+     *
+     * @return Application_Model_Acl Provides a fluent interface
+     */
+    public static function getInstance()
+    {
+        if (self::$_instance === null)
 		{
-			self::$_roleDataSource = new Application_Model_RoleMapper;
-		}
-		
-		if (self::$_resourceDataSource === null)
-		{
-			self::$_resourceDataSource = new Application_Model_ResourceMapper;
-		}
-		
-		if (self::$_privilegeDataSource === null)
-		{
-			self::$_privilegeDataSource = new Application_Model_PrivilegeMapper;
-		}
-	}
+            self::$_instance = new self();
+        }
+
+        return self::$_instance;
+    }
 	
 	/**
 	 * Sets the role data source
 	 *
-	 * @param mixed $dataSource
-	 * @return void
+	 * @param Application_Model_RoleMapper $dataSource
+	 * @return $this Provides fluent interface
 	 */
-	public static function setRoleDataSource($dataSource)
+	public function setRoleDataSource(Application_Model_MapperAbstract $dataSource)
 	{
-		self::$_roleDataSource = $dataSource;
+		$this->_roleDataSource = $dataSource;
+		
+		return $this;
+	}
+	
+	/**
+	 * Returns the role data source object
+	 *
+	 * @return Application_Model_RoleMapper
+	 */
+	public function getRoleDataSource()
+	{
+		if ($this->_roleDataSource === null)
+		{
+			$this->_roleDataSource = new Application_Model_RoleMapper;
+		}
+		
+		return $this->_roleDataSource;
 	}
 	
 	/**
 	 * Sets the resource data source
 	 *
-	 * @param mixed $dataSource
-	 * @return void
+	 * @param Application_Model_ResourceMapper $dataSource
+	 * @return $this Provides fluent interface
 	 */
-	public static function setResourceDataSource($dataSource)
+	public function setResourceDataSource(Application_Model_MapperAbstract $dataSource)
 	{
-		self::$_resourceDataSource = $dataSource;
+		$this->_resourceDataSource = $dataSource;
+		
+		return $this;
+	}
+	
+	/**
+	 * Returns the resource data source
+	 *
+	 * @return Application_Model_ResourceMapper
+	 */
+	public function getResourceDataSource()
+	{
+		if ($this->_resourceDataSource === null)
+		{
+			$this->_resourceDataSource = new Application_Model_ResourceMapper;
+		}
+		
+		return $this->_resourceDataSource;
 	}
 	
 	/**
 	 * Sets the privilege data source
 	 *
-	 * @param mixed $dataSource
-	 * @return void
+	 * @param Application_Model_PrivilegeMapper $dataSource
+	 * @return $this Provides fluent interface
 	 */
-	public static function setPrivilegeDataSource($dataSource)
+	public function setPrivilegeDataSource(Application_Model_MapperAbstract $dataSource)
 	{
-		self::$_privilegeDataSource = $dataSource;
+		$this->_privilegeDataSource = $dataSource;
+		
+		return $this;
+	}
+	
+	/**
+	 * Returns the privilege data source
+	 *
+	 * @return Application_Model_PrivilegeMapper
+	 */
+	public function getPrivilegeDataSource()
+	{
+		if ($this->_privilegeDataSource === null)
+		{
+			$this->_privilegeDataSource = new Application_Model_PrivilegeMapper;
+		}
+		
+		return $this->_privilegeDataSource;
 	}
 	
 	/**
@@ -132,16 +205,23 @@ class Application_Model_Acl extends Zend_Acl
 	 */
 	protected function _loadResources()
 	{
-		$resources = self::$_resourceDataSource->getAll();
+		$resources = $this->getResourceDataSource()->getAll();
+		
 		if (!empty($resources) && is_array($resources))
 		{
 			foreach ($resources as $resource)
 			{
-				$this->addResource(new Zend_Acl_Resource($resource['resource_name']));
+				$parent = null;
+				if (isset($this->_temp['resources'][$resource['parent_resource']]))
+				{
+					$parent = $this->_temp['resources'][$resource['parent_resource']];
+				}
+				$this->addResource(new Zend_Acl_Resource($resource['resource_name']), $parent);
 				// cache it
 				$this->_temp['resources'][$resource['resource_id']] = $resource['resource_name'];
 			}
 		}
+		
 		return $this;
 	}
 	
@@ -152,17 +232,23 @@ class Application_Model_Acl extends Zend_Acl
 	 */
 	protected function _loadRoles()
 	{
-		$roles = self::$_roleDataSource->getAll();
+		$roles = $this->getRoleDataSource()->getAll();
 		
 		if (!empty($roles) && is_array($roles))
 		{
 			foreach ($roles as $role)
 			{
-				$this->addRole(new Zend_Acl_Role($role['role_name']));
+				$parent = null;
+				if (isset($this->_temp['roles'][$role['parent_role']]))
+				{
+					$parent = $this->_temp['roles'][$role['parent_role']];
+				}
+				$this->addRole(new Zend_Acl_Role($role['role_name']), $parent);
 				// cache it
 				$this->_temp['roles'][$role['role_id']] = $role['role_name'];
 			}
 		}
+		
 		return $this;
 	}
 	
@@ -174,7 +260,8 @@ class Application_Model_Acl extends Zend_Acl
 	 */
 	protected function _loadPrivileges()
 	{
-		$privileges = self::$_privilegeDataSource->getAll();
+		$privileges = $this->getPrivilegeDataSource()->getAll();
+		
 		if (!empty($privileges) && is_array($privileges))
 		{
 			foreach ($privileges as $priv)
@@ -187,6 +274,7 @@ class Application_Model_Acl extends Zend_Acl
 					$resourceId = $this->_temp['resources'][$priv['resource_id']];
 				}
 				$privName = (!empty($priv['privilege_name'])) ? $priv['privilege_name'] : null;
+				
 				// get the name from cache based on ids
 				if (isset($this->_temp['roles'][$priv['role_id']]))
 				{

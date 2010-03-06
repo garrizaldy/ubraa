@@ -79,7 +79,7 @@ class Application_Model_ResourceMapper extends Application_Model_MapperAbstract
 	public function getAll()
 	{
 		$table = $this->_getTable();
-		$select = $table->select();
+		$select = $table->select()->order('inheritance_level ASC');
 		return $this->fetchAll($select);
 	}
 	

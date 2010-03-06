@@ -33,10 +33,12 @@ class Application_Model_AclTest extends ControllerTestCase
 	const GUEST = 120;
 	const MEMBER = 121;
 	const ADMIN = 122;
+	const EDITOR = 123;
 	
 	const ARTICLE = 220;
 	const COMMENT = 221;
 	const GALLERY = 222;
+	const LATEST_ARTICLE = 223;
 	
 	const ARTICLE_VIEW = 'ARTICLE_VIEW';
 	const ARTICLE_ADD = 'ARTICLE_ADD';
@@ -55,21 +57,37 @@ class Application_Model_AclTest extends ControllerTestCase
 	const ALLOW = 1;
 	const DENY = 0;
 	
+	/**
+	 * Roles must be sorted by inheritance level asc
+	 */
 	protected $_testRoleData = array(
 		self::GUEST => array(
 			'role_id' => 120,
 			'role_name' => 'guest',
-			'role_description' => 'Guest users / not logged in'
+			'role_description' => 'Guest users / not logged in',
+			'parent_role' => null,
+			'inheritance_level' => 0
 		),
 		self::MEMBER => array(
 			'role_id' => 121,
 			'role_name' =>'member',
-			'role_description' => 'Logged in user'
+			'role_description' => 'Logged in user',
+			'parent_role' => null,
+			'inheritance_level' => 0
 		),
 		self::ADMIN => array(
 			'role_id' => 122,
 			'role_name' => 'admin',
-			'role_description' => 'Admin user'
+			'role_description' => 'Admin user',
+			'parent_role' => null,
+			'inheritance_level' => 0
+		),
+		self::EDITOR => array(
+			'role_id' => 123,
+			'role_name' => 'editor',
+			'role_description' => 'Editor',
+			'parent_role' => self::MEMBER,
+			'inheritance_level' => 1
 		)
 	);
 	
@@ -77,17 +95,30 @@ class Application_Model_AclTest extends ControllerTestCase
 		self::ARTICLE => array(
 			'resource_id' => 220,
 			'resource_name' => 'article',
-			'resource_description' => 'Article resource'
+			'resource_description' => 'Article resource',
+			'parent_resource' => null,
+			'inheritance_level' => 0
 		),
 		self::COMMENT => array(
 			'resource_id' => 221,
 			'resource_name' =>'comment',
-			'resource_description' => 'Comments resource'
+			'resource_description' => 'Comments resource',
+			'parent_resource' => null,
+			'inheritance_level' => 0
 		),
 		self::GALLERY => array(
 			'resource_id' => 222,
 			'resource_name' => 'gallery',
-			'resource_description' => 'Gallery resource'
+			'resource_description' => 'Gallery resource',
+			'parent_resource' => null,
+			'inheritance_level' => 0
+		),
+		self::LATEST_ARTICLE => array(
+			'resource_id' => 223,
+			'resource_name' => 'latest_article',
+			'resource_description' => 'Latest articles dislayed at the main page',
+			'parent_resource' => self::ARTICLE,
+			'inheritance_level' => 1
 		)
 	);
 	
@@ -166,15 +197,84 @@ class Application_Model_AclTest extends ControllerTestCase
 			'privilege_name'	=> self::GALLERY_EDIT,
 			'allow'				=> self::ALLOW,
 			'privilege_description' => 'allow member to edit gallery'
+		),
+		// editor, a type of member, allowed to delete articles and
+		// edit comment and no more
+		array(
+			'role_id'			=> self::EDITOR,
+			'resource_id'		=> self::ARTICLE,
+			'privilege_name'	=> self::ARTICLE_DELETE,
+			'allow'				=> self::ALLOW,
+			'privilege_description' => 'allow editor to delete articles'
+		),
+		array(
+			'role_id'			=> self::EDITOR,
+			'resource_id'		=> self::COMMENT,
+			'privilege_name'	=> self::COMMENT_EDIT,
+			'allow'				=> self::ALLOW,
+			'privilege_description' => 'allow editor to edit comments'
+		),
+		// latest news cannot be deleted by members (and of course editors also)
+		array(
+			'role_id'			=> self::MEMBER,
+			'resource_id'		=> self::LATEST_ARTICLE,
+			'privilege_name'	=> self::ARTICLE_DELETE,
+			'allow'				=> self::DENY,
+			'privilege_description' => 'deny members to delete latest articles'
 		)
 	);	
 	
 	public function testObject()
 	{
-		$acl = new Application_Model_Acl;
+		$acl = Application_Model_Acl::getInstance();
 		$this->assertType('Application_Model_Acl', $acl);
 		
 		return $acl;
+	}
+	
+	/**
+	 * @depends testObject
+	 */
+	public function testRoleDataSource()
+	{
+		$acl = Application_Model_Acl::getInstance();
+		$this->assertType('Application_Model_RoleMapper', $acl->getRoleDataSource());
+		
+		$dataSource = $this->getMock('Application_Model_RoleMapper');
+		$this->assertNotEquals($dataSource, $acl->getRoleDataSource());
+		$acl->setRoleDataSource($dataSource);
+		
+		$this->assertEquals($dataSource, $acl->getRoleDataSource());
+	}
+	
+	/**
+	 * @depends testObject
+	 */
+	public function testResourceDataSource()
+	{
+		$acl = Application_Model_Acl::getInstance();
+		$this->assertType('Application_Model_ResourceMapper', $acl->getResourceDataSource());
+		
+		$dataSource = $this->getMock('Application_Model_ResourceMapper');
+		$this->assertNotEquals($dataSource, $acl->getResourceDataSource());
+		$acl->setResourceDataSource($dataSource);
+		
+		$this->assertEquals($dataSource, $acl->getResourceDataSource());
+	}
+	
+	/**
+	 * @depends testObject
+	 */
+	public function testPrivilegeDataSource()
+	{
+		$acl = Application_Model_Acl::getInstance();
+		$this->assertType('Application_Model_PrivilegeMapper', $acl->getPrivilegeDataSource());
+		
+		$dataSource = $this->getMock('Application_Model_PrivilegeMapper');
+		$this->assertNotEquals($dataSource, $acl->getPrivilegeDataSource());
+		$acl->setPrivilegeDataSource($dataSource);
+		
+		$this->assertEquals($dataSource, $acl->getPrivilegeDataSource());
 	}
 	
 	/**
@@ -183,6 +283,7 @@ class Application_Model_AclTest extends ControllerTestCase
 	 */
 	public function testInit(Application_Model_Acl $acl)
 	{
+		// mock role mapper
 		$roleDataSource = $this->getMock(
 			'Application_Model_RoleMapper', array('getAll')
 		);
@@ -190,6 +291,7 @@ class Application_Model_AclTest extends ControllerTestCase
 			->method('getAll')
 			->will($this->returnValue($this->_testRoleData));
 				   
+		// mock resource mapper
 		$resourceDataSource = $this->getMock(
 			'Application_Model_ResourceMapper', array('getAll')
 		);
@@ -198,6 +300,7 @@ class Application_Model_AclTest extends ControllerTestCase
 			->will($this->returnValue($this->_testResourceData)
 		);
 			
+		// mock privilege mapper
 		$privilegeDataSource = $this->getMock(
 			'Application_Model_PrivilegeMapper', array('getAll')
 		);
@@ -205,10 +308,10 @@ class Application_Model_AclTest extends ControllerTestCase
 			->method('getAll')
 			->will($this->returnValue($this->_testPrivilegeData)
 		);
-			
-		Application_Model_Acl::setRoleDataSource($roleDataSource);
-		Application_Model_Acl::setResourceDataSource($resourceDataSource);
-		Application_Model_Acl::setPrivilegeDataSource($privilegeDataSource);
+		
+		$acl->setRoleDataSource($roleDataSource);
+		$acl->setResourceDataSource($resourceDataSource);
+		$acl->setPrivilegeDataSource($privilegeDataSource);
 		
 		$this->assertType('Application_Model_Acl', $acl->init());
 		
@@ -241,6 +344,16 @@ class Application_Model_AclTest extends ControllerTestCase
 		// member can't delete article
 		$this->assertFalse($acl->isAllowed('member', 'article', self::ARTICLE_DELETE));
 		
+		// test editor for article privileges
+		// editor can view articles
+		$this->assertTrue($acl->isAllowed('editor', 'article', self::ARTICLE_VIEW));
+		// editor can add article
+		$this->assertTrue($acl->isAllowed('editor', 'article', self::ARTICLE_ADD));
+		// editor can edit article
+		$this->assertTrue($acl->isAllowed('editor', 'article', self::ARTICLE_EDIT));
+		// editor can delete article
+		$this->assertTrue($acl->isAllowed('editor', 'article', self::ARTICLE_DELETE));
+		
 		// test admin for article privileges
 		// admin can view articles
 		$this->assertTrue($acl->isAllowed('admin', 'article', self::ARTICLE_VIEW));
@@ -250,6 +363,57 @@ class Application_Model_AclTest extends ControllerTestCase
 		$this->assertTrue($acl->isAllowed('admin', 'article', self::ARTICLE_EDIT));
 		// admin can delete article
 		$this->assertTrue($acl->isAllowed('admin', 'article', self::ARTICLE_DELETE));
+	}
+	
+	/**
+	 * All privileges that applies to articles will also
+	 * apply to latest articles
+	 * 
+	 * @depends testInit
+	 * @param Application_Model_Acl $acl
+	 */
+	public function testRulesLatestArticles(Application_Model_Acl $acl)
+	{
+		// test guest for viewing latest atricles
+		// guest can also view latest articles
+		$this->assertTrue($acl->isAllowed('guest', 'latest_article', self::ARTICLE_VIEW));
+		// guest can't add latest article
+		$this->assertFalse($acl->isAllowed('guest', 'latest_article', self::ARTICLE_ADD));
+		// guest can't edit latest article
+		$this->assertFalse($acl->isAllowed('guest', 'latest_article', self::ARTICLE_EDIT));
+		// guest can't delete latest article
+		$this->assertFalse($acl->isAllowed('guest', 'latest_article', self::ARTICLE_DELETE));
+		
+		// test member for latest article privileges
+		// member can view latest articles
+		$this->assertTrue($acl->isAllowed('member', 'latest_article', self::ARTICLE_VIEW));
+		// member can add latest article
+		$this->assertTrue($acl->isAllowed('member', 'latest_article', self::ARTICLE_ADD));
+		// member can edit latest article
+		$this->assertTrue($acl->isAllowed('member', 'latest_article', self::ARTICLE_EDIT));
+		// member can't delete latest article
+		$this->assertFalse($acl->isAllowed('member', 'latest_article', self::ARTICLE_DELETE));
+		
+		
+		// test editor for latest article privileges
+		// editor can view latest articles
+		$this->assertTrue($acl->isAllowed('editor', 'latest_article', self::ARTICLE_VIEW));
+		// editor can add latest article
+		$this->assertTrue($acl->isAllowed('editor', 'latest_article', self::ARTICLE_ADD));
+		// editor can edit latest article
+		$this->assertTrue($acl->isAllowed('editor', 'latest_article', self::ARTICLE_EDIT));
+		// editor can't delete latest article
+		$this->assertFalse($acl->isAllowed('editor', 'latest_article', self::ARTICLE_DELETE));
+		
+		// test admin for latest article privileges
+		// admin can view latest articles
+		$this->assertTrue($acl->isAllowed('admin', 'latest_article', self::ARTICLE_VIEW));
+		// admin can add latest article
+		$this->assertTrue($acl->isAllowed('admin', 'latest_article', self::ARTICLE_ADD));
+		// admin can edit latest article
+		$this->assertTrue($acl->isAllowed('admin', 'latest_article', self::ARTICLE_EDIT));
+		// admin can delete latest article
+		$this->assertTrue($acl->isAllowed('admin', 'latest_article', self::ARTICLE_DELETE));
 	}
 	
 	/**
@@ -274,6 +438,14 @@ class Application_Model_AclTest extends ControllerTestCase
 		$this->assertFalse($acl->isAllowed('member', 'comment', self::COMMENT_EDIT));
 		// member can't delete comment
 		$this->assertFalse($acl->isAllowed('member', 'comment', self::COMMENT_DELETE));
+		
+		// test editor for comment privileges
+		// editor can add comment
+		$this->assertTrue($acl->isAllowed('editor', 'comment', self::COMMENT_ADD));
+		// editor can edit comment
+		$this->assertTrue($acl->isAllowed('editor', 'comment', self::COMMENT_EDIT));
+		// editor can't delete comment
+		$this->assertFalse($acl->isAllowed('editor', 'comment', self::COMMENT_DELETE));
 		
 		// test admin for comment privileges
 		// admin can add comment
@@ -309,6 +481,16 @@ class Application_Model_AclTest extends ControllerTestCase
 		$this->assertTrue($acl->isAllowed('member', 'gallery', self::GALLERY_EDIT));
 		// member can't delete gallery
 		$this->assertFalse($acl->isAllowed('member', 'gallery', self::GALLERY_DELETE));
+		
+		// test editor privileges for gallery
+		// editor can view gallery
+		$this->assertTrue($acl->isAllowed('editor', 'gallery', self::GALLERY_VIEW));
+		// editor can add gallery
+		$this->assertTrue($acl->isAllowed('editor', 'gallery', self::GALLERY_ADD));
+		// editor can edit gallery
+		$this->assertTrue($acl->isAllowed('editor', 'gallery', self::GALLERY_EDIT));
+		// editor can't delete gallery
+		$this->assertFalse($acl->isAllowed('editor', 'gallery', self::GALLERY_DELETE));
 		
 		// test admin privileges for gallery
 		// admin can view gallery

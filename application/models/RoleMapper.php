@@ -64,7 +64,7 @@ class Application_Model_RoleMapper extends Application_Model_MapperAbstract
 	public function getAll()
 	{
 		$table = $this->_getTable();
-		$select = $table->select();
+		$select = $table->select()->order('inheritance_level ASC');
 		return $this->fetchAll($select);
 	}
 	
