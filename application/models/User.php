@@ -25,37 +25,128 @@
 
 class Application_Model_User
 {
-	protected $_mapper;
+	/**
+	 * @var Application_Model_UserMapper
+	 */
+	protected $_userMapper;
+	
+	/**
+	 * @var Application_Model_UserRoleMapper
+	 */
+	protected $_userRoleMapper;
+	
+	/**
+	 * Default roles for newly registered users
+	 * Contains role ids
+	 * 
+	 * @var array
+	 */
+	protected $_defaultRoles;
+	
+	/**
+	 * @var string
+	 */
+	private $_salt = 'ea559da0994340048c3e13586d1fb760';
 	
 	/**
 	 * Sets the data mapper
 	 *
-	 * @param mixed $mapper
+	 * @param Application_Model_UserMapper $mapper
 	 * @return $this Provides fluent interface
 	 */
-	public function setMapper(Application_Model_MapperAbstract $mapper)
+	public function setUserMapper(Application_Model_MapperAbstract $mapper)
 	{
-		$this->_mapper = $mapper;
+		$this->_userMapper = $mapper;
 		
 		return $this;
 	}
 	
 	/**
-	 * Returns the data mapper
+	 * Returns the user data mapper
 	 *
-	 * @return mixed $mapper
+	 * @return Application_Model_UserMapper
 	 */
-	public function getMapper()
+	public function getUserMapper()
 	{
-		return $this->_mapper;
+		if ($this->_userMapper === null)
+		{
+			$this->_userMapper = new Application_Model_UserMapper;
+		}
+		
+		return $this->_userMapper;
 	}
 	
 	/**
-	 * Initializes the model
+	 * Sets the user role data mapper
+	 *
+	 * @param Application_Model_UserRoleMapper
+	 * @return $this Provides fluent interface
 	 */
-	public function __construct()
+	public function setUserRoleMapper(Application_Model_MapperAbstract $mapper)
 	{
-		$this->setMapper(new Application_Model_UserMapper);
+		$this->_userRoleMapper = $mapper;
+		
+		return $this;
+	}
+	
+	/**
+	 * Returns the user role data mapper
+	 *
+	 * @return Application_Model_UserRoleMapper
+	 */
+	public function getUserRoleMapper()
+	{
+		if ($this->_userRoleMapper === null)
+		{
+			$this->_userRoleMapper = new Application_Model_UserRoleMapper;
+		}
+		
+		return $this->_userRoleMapper;
+	}
+	
+	/**
+	 * Sets the default roles for newly registered users
+	 *
+	 * @param array $roles Contains role ids
+	 * @return $this Provides fluent interface
+	 */
+	public function setDefaultRoles(array $roles)
+	{
+		$this->_defaultRoles = $roles;
+		
+		return $this;
+	}
+	
+	/**
+	 * Returns the default roles for newly registered users
+	 *
+	 * @todo Add mechanism to retrieve default roles from a certain source
+	 * The source can be a config file or from database, or whatever
+	 *
+	 * @return array
+	 */
+	public function getDefaultRoles()
+	{
+		if ($this->_defaultRoles === null)
+		{
+			// default role, restricted user, hard coded as of now
+			$this->_defaultRoles = array(2);
+		}
+		
+		return $this->_defaultRoles;
+	}
+	
+	/**
+	 * Returns a salted-hashed value of a string
+	 * Only applicable for user password (no more)
+	 * Salt is not shared outside the class
+	 *
+	 * @param string $value
+	 * @return string
+	 */
+	protected function _hash($value)
+	{
+		return sha1($this->_salt . $value);
 	}
 	
 	/**
@@ -66,9 +157,21 @@ class Application_Model_User
 	 */
 	public function register(array $data)
 	{
-		$mapper = $this->getMapper();
-		$mapper->add($data);
+		// hash password
+		$data['password'] = $this->_hash($data['password']);
 		
-		return true;
+		$userId = $this->getUserMapper()->add($data);
+		if ($userId)
+		{
+			// set default roles
+			$defaultRoles = $this->getDefaultRoles();
+			$userRoleMapper = $this->getUserRoleMapper();
+			foreach ($defaultRoles as $role)
+			{
+				$userRoleMapper->add(array($userId, $role));
+			}
+		}
+		
+		return $userId;
 	}
 }

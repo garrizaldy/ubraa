@@ -56,28 +56,88 @@ class Application_Model_UserTest extends ControllerTestCase
 	{
 		$user = new Application_Model_User;
 		$this->assertType('Application_Model_User', $user);
-		
-		$mockMapper = $this->getMock(
-			'Application_Model_UserMapper',
-			array('add', 'save', 'getById', 'getByUsername', 'delete')
-		);
-		
-		$user->setMapper($mockMapper);
-		
-		$this->assertTrue((boolean)$user->getMapper());
-		
-		return $user;
 	}
 	
 	/**
 	 * @depends testObject
 	 */
-	public function testRegister($user)
+	public function testUserMapper()
 	{
-		$data = $this->_testData[self::TEST_DATA1];
+		$user = new Application_Model_User;
 		
-		$result = $user->register($data);
+		$this->assertType('Application_Model_UserMapper', $user->getUserMapper());
 		
-		$this->assertTrue($result);
+		$mock = $this->getMock('Application_Model_UserMapper');
+		$user->setUserMapper($mock);
+		
+		$this->assertEquals($mock, $user->getUserMapper());
+	}
+	
+	/**
+	 * @depends testObject
+	 */
+	public function testUserRoleMapper()
+	{
+		$user = new Application_Model_User;
+		
+		$this->assertType('Application_Model_UserRoleMapper', $user->getUserRoleMapper());
+		
+		$mock = $this->getMock('Application_Model_UserRoleMapper');
+		$user->setUserRoleMapper($mock);
+		
+		$this->assertEquals($mock, $user->getUserRoleMapper());
+	}
+	
+	/**
+	 * @depends testObject
+	 */
+	public function testDefaultRoles()
+	{
+		$roles = array(1, 2, 3);
+		
+		$user = new Application_Model_User;
+		$user->setDefaultRoles($roles);
+		
+		$this->assertEquals($roles, $user->getDefaultRoles());
+	}
+	
+	/**
+	 * @depends testObject
+	 */
+	public function testRegister()
+	{
+		$user = new Application_Model_User;
+		
+		// fake data mapper for user
+		$mockUserMapper = $this->getMock(
+			'Application_Model_UserMapper',
+			array('add')
+		);
+		$mockUserMapper->expects($this->once())
+			->method('add')
+			->will($this->returnValue(self::TEST_DATA1));
+			
+		// fake data mapper for user role
+		$mockUserRoleMapper = $this->getMock(
+			'Application_Model_UserRoleMapper',
+			array('add')
+		);
+		$mockUserRoleMapper->expects($this->any())
+			->method('add')
+			->will($this->returnValue(array(self::TEST_DATA1, 1)));
+		
+		// set data mappers
+		$user->setUserMapper($mockUserMapper)
+			->setUserRoleMapper($mockUserRoleMapper);
+			
+		// register now
+		$userId = $user->register($this->_testData[self::TEST_DATA1]);
+		$this->assertEquals(self::TEST_DATA1, $userId);
+		
+		// should have no messages/exceptions of any kind
+		$this->assertFalse($user->getUserMapper()->hasExceptions());
+		$this->assertFalse($user->getUserMapper()->hasMessages());
+		$this->assertFalse($user->getUserRoleMapper()->hasExceptions());
+		$this->assertFalse($user->getUserRoleMapper()->hasMessages());
 	}
 }
