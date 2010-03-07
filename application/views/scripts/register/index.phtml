@@ -1,0 +1,22 @@
+<h1>New user registration</h1>
+<form action="<?php echo $this->baseUrl() ?>/register" method="post" enctype="multipart/form-data">
+	<p>
+		Username:
+		<input type="text" name="username" id="username" />
+	</p>
+	<p>
+		Password:
+		<input type="password" name="password" id="password" />
+	</p>
+	<p>
+		Confirm:
+		<input type="password" name="confirm" id="confirm" />
+	</p>
+	<p>
+		Email:
+		<input type="text" name="email" id="email" />
+	</p>
+	<p>
+		<input type="submit" name="submit" id="submit" value="Register" />
+	</p>
+</form>

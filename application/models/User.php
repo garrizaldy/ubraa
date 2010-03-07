@@ -168,7 +168,15 @@ class Application_Model_User
 			$userRoleMapper = $this->getUserRoleMapper();
 			foreach ($defaultRoles as $role)
 			{
-				$userRoleMapper->add(array($userId, $role));
+				$roleAdd = $userRoleMapper->add(array(
+					'user_id'	=> $userId,
+					'role_id'	=> $role
+				));
+				
+				if (!$roleAdd)
+				{
+					return false;
+				}
 			}
 		}
 		
